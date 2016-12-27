@@ -3,6 +3,7 @@
   gather_facts: yes
   vars:
     network_install_http_root: /srv/network-install
+    debian_netboot_tarball: http://archive.ubuntu.com/ubuntu/dists/trusty-updates/main/installer-amd64/current/images/netboot/netboot.tar.gz
     tftp_boot_root: /var/lib/tftpboot
     isos_mount_directory: /mnt/isos
     kickstart_wsgi_app_dir: /srv/kickstart
@@ -25,37 +26,10 @@
       template: src=templates/etc/dnsmasq.conf dest=/etc/
       notify: Restart dnsmasq
 
-    # Setup PXE
-    - name: Make tftp boot directories
-      file: state=directory path={{ tftp_boot_root }}/{{ item }}/
-      with_items:
-        - pxelinux.cfg
-        - memtest
+    # Setup tftp boot dir
+    - name: Install ubuntu netboot installer for tftp
+      unarchive:
 
-    - name: Copy image for pxe menu background
-      copy: src=r29.jpg dest={{ tftp_boot_root }}/
-
-    - name: Copy pxe files from syslinux
-      copy: remote_src=yes src=/usr/lib/syslinux/{{ item }} dest={{ tftp_boot_root }}/
-      with_items: [ pxelinux.0, vesamenu.c32, reboot.c32, vesainfo.c32 ]
-
-    - name: Create pxe boot menu
-      template: src=templates/var/lib/tftpboot/pxelinux.cfg/default dest={{ tftp_boot_root }}/pxelinux.cfg/
-
-    - name: Download Memtest
-      get_url:
-        dest=/home/vagrant/memtest86+-5.01.bin.gz
-        url=http://www.memtest.org/download/5.01/memtest86+-5.01.bin.gz
-        checksum=md5:14ec4c4d827a49629c41b499303355ed
-
-    - name: Decompress memtest
-      command: gunzip --keep /home/vagrant/memtest86+-5.01.bin.gz creates=/home/vagrant/memtest86+-5.01.bin
-
-    - name: Make memtest available for boot
-      copy:
-        src=/home/vagrant/memtest86+-5.01.bin
-        dest={{ tftp_boot_root }}/memtest/memtest
-        remote_src=yes
 
     # Setup Install disk
     - name: Create mount directories
