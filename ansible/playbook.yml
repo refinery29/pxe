@@ -21,17 +21,16 @@
         - python-jinja2
         - python-yaml
 
-    # Configure Dnsmasq
     - name: Configure Dnsmasq with /etc/dnsmasq.conf
       template: src=templates/etc/dnsmasq.conf dest=/etc/
       notify: Restart dnsmasq
 
-    # Setup tftp boot dir
-    - name: Install ubuntu netboot installer for tftp
-      unarchive:
+    - name: Setup tftp boot dir
+      file: state=directory path={{ tftp_boot_root }}
 
+    - name: Download and extract debian netboot dir
+      unarchive: remote_src=yes src={{ debian_netboot_tarball }} dest={{ tftp_boot_root }}
 
-    # Setup Install disk
     - name: Create mount directories
       file: state=directory path={{ isos_mount_directory }}/{{ item.name }}
       with_items: "{{ install_isos }}"
@@ -39,8 +38,8 @@
     - name: Download install isos
       get_url:
         dest=/home/vagrant/{{ item.name }}.iso
-        url={{ item.url }}/{{ item.name }}.iso
-        checksum={{ item.checksum }}
+        url={{ item.url }}
+        checksum={{ item.checksum | default(None) }}
       with_items: "{{ install_isos }}"
 
     - name: Mount install isos
@@ -51,19 +50,7 @@
         state=mounted
       with_items: "{{ install_isos }}"
 
-    - name: Create boot directories for isos
-      file: state=directory path={{ tftp_boot_root }}/{{ item.name }}
-      with_items: "{{ install_isos }}"
-
-
-    - name: Copy boot files for isos
-      copy: remote_src=yes src={{ isos_mount_directory }}/{{ item.0.name }}/{{ item.1 }} dest={{ tftp_boot_root }}/{{ item.0.name}}
-      with_subelements:
-        - "{{ install_isos }}"
-        - boot_files
-
-    # Setup wsgi app to serve kickstart files
-    - name: Make app dir
+    - name: Make kickstart app dir
       file: state=directory path=/srv/kickstart/
 
     - name: Install python wsgi app
@@ -79,14 +66,16 @@
     - name: Copy kickstart template files
       copy: src=files/srv/kickstart/templates dest={{ kickstart_wsgi_app_dir }}/
 
-    # Setup Nginx to serve the install disk and kickstart
-    - template: src=templates/etc/nginx/sites-available/network-install.conf dest=/etc/nginx/sites-available/
+    - name: Install nginx config for kickstart app
+      template: src=templates/etc/nginx/sites-available/network-install.conf dest=/etc/nginx/sites-available/
       notify: Restart nginx
 
-    - file: state=link src=../sites-available/network-install.conf path=/etc/nginx/sites-enabled/network-install.conf
+    - name: Link nginx config to enable kickstart app
+      file: state=link src=../sites-available/network-install.conf path=/etc/nginx/sites-enabled/network-install.conf
       notify: Restart nginx
 
-    - file: state=absent path=/etc/nginx/sites-enabled/default
+    - name: Disable default nginx config
+      file: state=absent path=/etc/nginx/sites-enabled/default
       notify: Restart nginx
 
   handlers:
