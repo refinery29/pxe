@@ -1,6 +1,7 @@
 ---
 - hosts: all
   gather_facts: yes
+  become: yes
   vars:
     network_install_http_root: /srv/network-install
     debian_netboot_tarball: http://archive.ubuntu.com/ubuntu/dists/trusty-updates/main/installer-amd64/current/images/netboot/netboot.tar.gz
@@ -37,7 +38,7 @@
 
     - name: Download install isos
       get_url:
-        dest=/home/vagrant/{{ item.name }}.iso
+        dest=/tmp/{{ item.name }}.iso
         url={{ item.url }}
         checksum={{ item.checksum | default(None) }}
       with_items: "{{ install_isos }}"
@@ -45,7 +46,7 @@
     - name: Mount install isos
       mount:
         name={{ isos_mount_directory }}/{{ item.name }}
-        src=/home/vagrant/{{ item.name }}.iso
+        src=/tmp/{{ item.name }}.iso
         fstype=iso9660
         state=mounted
       with_items: "{{ install_isos }}"
