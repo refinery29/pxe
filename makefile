@@ -23,8 +23,8 @@ destroy_server:
 create_target:
 	VBoxManage createhd --filename $(TARGET_VM).vdi --size 32768
 	VBoxManage createvm --name $(TARGET_VM) --register
-	VBoxManage storagectl $(TARGET_VM) --name SATA --add sata
-	VBoxManage storageattach $(TARGET_VM) --storagectl SATA --port 0 --type hdd --medium $(TARGET_VM).vdi
+#	VBoxManage storagectl $(TARGET_VM) --name SATA --add sata
+#	VBoxManage storageattach $(TARGET_VM) --storagectl SATA --port 0 --type hdd --medium $(TARGET_VM).vdi
 	VBoxManage modifyvm $(TARGET_VM) --memory 2048
 	VBoxManage modifyvm $(TARGET_VM) --hostonlyadapter1 $(SHARED_NETWORK) --nic1 hostonly
 	VBoxManage modifyvm $(TARGET_VM) --nic2 nat
