@@ -21,6 +21,9 @@ install_isos:
 
 dnsmasq_dhcp_hosts:
   -
+    ip: 10.10.210.103
+    mac: 18:66:da:ef:ec:64
+  -
     ip: 10.10.210.191
     mac: '00:25:b5:01:a0:08'
   -
@@ -62,9 +65,26 @@ kickstart_host_vars:
     centos_7_x86_64:
       url: http://192.168.42.2:8080/isos/CentOS-7-x86_64-Minimal
 
-  default:
-    hostname: pxefresh.local
+  10.10.210.103: &dell_default
+    networks:
+      -
+        device: eno1
+        bootproto: dhcp
+
+  10.10.210.191: &cisco_default
     networks:
       -
         device: enp6s0
         bootproto: dhcp
+
+  10.10.210.192: *cisco_default
+  10.10.210.201: *cisco_default
+  10.10.210.202: *cisco_default
+  10.10.210.203: *cisco_default
+  10.10.210.204: *cisco_default
+  10.10.210.205: *cisco_default
+  10.10.210.206: *cisco_default
+  10.10.210.207: *cisco_default
+  10.10.210.208: *cisco_default
+  10.10.210.209: *cisco_default
+  10.10.210.210: *cisco_default

@@ -1,0 +1,16 @@
+label Memtest
+  menu label Memtest
+  kernel memtest/memtest
+
+label cold_reboot
+  menu label Cold reboot
+  com32 reboot.c32
+
+label warm_reboot
+  menu label Warm reboot
+  com32 reboot.c32
+  append --warm
+
+label vesa_info
+  menu label VESA info
+  com32 vesainfo.c32

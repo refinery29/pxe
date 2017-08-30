@@ -60,8 +60,10 @@
 
     - name: Create pxe boot menu
       template:
-        src=templates/var/lib/tftpboot/pxelinux.cfg/default
-        dest={{ tftp_boot_root }}/pxelinux.cfg/
+        src: "{{ item }}"
+        dest: "{{ tftp_boot_root }}/pxelinux.cfg/{{ item | basename | regex_replace('\\.j2','') }}"
+      with_fileglob:
+        - templates{{ tftp_boot_root }}/pxelinux.cfg/*.j2
 
     - name: Download Memtest
       get_url:
